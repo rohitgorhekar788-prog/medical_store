@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Stock & Inventory Management - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Stock & Batch Inventory</h2>
+        <p class="text-muted small mb-0">Track medicine batch numbers, stock additions, and expiry schedules.</p>
+    </div>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStockModal">
+        <i class="fa-solid fa-boxes-packing me-1"></i> Add Stock Batch
+    </button>
+</div>
+
+<div class="card card-custom bg-white p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Batch No</th>
+                    <th>Medicine Name</th>
+                    <th>Quantity</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for batch in batches %}
+                <tr>
+                    <td><code class="fw-bold text-primary">{{ batch.batch_no }}</code></td>
+                    <td><strong>{{ batch.medicine.name }}</strong></td>
+                    <td>{{ batch.quantity }} units</td>
+                    <td>{{ batch.expiry_date.strftime('%d %b, %Y') }}</td>
+                    <td>
+                        {% if batch.quantity == 0 %}
+                            <span class="badge bg-secondary">Depleted</span>
+                        {% else %}
+                            <span class="badge bg-success">Active</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No inventory batches recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Add Stock -->
+<div class="modal fade" id="addStockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Add Stock Batch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Medicine</label>
+                    <select name="medicine_id" class="form-select" required>
+                        {% for med in medicines %}
+                        <option value="{{ med.id }}">{{ med.name }} (Stock: {{ med.current_stock }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Batch Number</label>
+                    <input type="text" name="batch_no" class="form-control" placeholder="e.g. BATCH-2026-X1" required>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" name="quantity" class="form-control" min="1" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Expiry Date</label>
+                        <input type="date" name="expiry_date" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success w-100">Add Stock to Inventory</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

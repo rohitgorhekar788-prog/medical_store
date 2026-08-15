@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}System Alerts - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1">Inventory & System Alerts</h2>
+    <p class="text-muted small mb-0">Automated notifications for out of stock items, low thresholds, and upcoming expiries.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Out of Stock -->
+    <div class="col-md-4">
+        <div class="card card-custom bg-white p-3 border-start border-danger border-4">
+            <h5 class="fw-bold text-danger mb-3"><i class="fa-solid fa-circle-xmark me-2"></i> Out of Stock ({{ out_of_stock|length }})</h5>
+            <ul class="list-group list-group-flush small">
+                {% for med in out_of_stock %}
+                <li class="list-group-content d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <strong>{{ med.name }}</strong>
+                    <span class="badge bg-danger">0 Left</span>
+                </li>
+                {% else %}
+                <p class="text-muted mb-0">No items out of stock.</p>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Low Stock -->
+    <div class="col-md-4">
+        <div class="card card-custom bg-white p-3 border-start border-warning border-4">
+            <h5 class="fw-bold text-warning mb-3"><i class="fa-solid fa-triangle-exclamation me-2"></i> Low Stock ({{ low_stock|length }})</h5>
+            <ul class="list-group list-group-flush small">
+                {% for med in low_stock %}
+                <li class="list-group-content d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <strong>{{ med.name }}</strong>
+                    <span class="badge bg-warning text-dark">{{ med.current_stock }} units left</span>
+                </li>
+                {% else %}
+                <p class="text-muted mb-0">All items are sufficiently stocked.</p>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Expiring Soon -->
+    <div class="col-md-4">
+        <div class="card card-custom bg-white p-3 border-start border-info border-4">
+            <h5 class="fw-bold text-info mb-3"><i class="fa-solid fa-clock me-2"></i> Expiring Soon (&lt; 30 Days)</h5>
+            <ul class="list-group list-group-flush small">
+                {% for batch in expiring %}
+                <li class="list-group-content d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div>
+                        <strong>{{ batch.medicine.name }}</strong><br>
+                        <small class="text-muted">Batch: {{ batch.batch_no }}</small>
+                    </div>
+                    <span class="badge bg-info text-dark">{{ batch.expiry_date.strftime('%d %b') }}</span>
+                </li>
+                {% else %}
+                <p class="text-muted mb-0">No batches expiring within 30 days.</p>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

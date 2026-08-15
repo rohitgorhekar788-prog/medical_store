@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Sales History & Invoices - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Sales History & Invoices</h2>
+        <p class="text-muted small mb-0">View all past transaction records and re-download billing PDF invoices.</p>
+    </div>
+</div>
+
+<div class="card card-custom bg-white p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Invoice ID</th>
+                    <th>Date & Time</th>
+                    <th>Payment Mode</th>
+                    <th>Total Amount</th>
+                    <th class="text-end">Invoice Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td><strong>#INV-{{ "%05d"|format(sale.id) }}</strong></td>
+                    <td>{{ sale.sale_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ sale.payment_mode }}</span></td>
+                    <td class="fw-bold text-success">₹{{ "%.2f"|format(sale.total_amount) }}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('download_invoice', sale_id=sale.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fa-solid fa-file-pdf me-1"></i> Download PDF
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No sales history found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

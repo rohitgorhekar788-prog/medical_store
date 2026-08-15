@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}AI Analytics - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-chart-pie text-success me-2"></i> AI Business Analytics</h2>
+    <p class="text-muted small mb-0">Sales trends, fast-moving items, and inventory turnover insights.</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card card-custom bg-white p-4 text-center">
+            <span class="text-muted small">Total Revenue</span>
+            <h3 class="fw-bold text-success mb-0">₹{{ "%.2f"|format(total_sales) }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom bg-white p-4 text-center">
+            <span class="text-muted small">Total Billing Transactions</span>
+            <h3 class="fw-bold text-primary mb-0">{{ total_orders }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom bg-white p-4 text-center">
+            <span class="text-muted small">Medicines Managed</span>
+            <h3 class="fw-bold text-dark mb-0">{{ medicines_count }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="card card-custom bg-white p-4">
+    <h5 class="fw-bold mb-3">Top High-Stock / Fast-Moving Items</h5>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Medicine Name</th>
+                    <th>Category</th>
+                    <th>Current Stock</th>
+                    <th>Selling Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for med in fast_moving %}
+                <tr>
+                    <td><strong>{{ med.name }}</strong></td>
+                    <td><span class="badge bg-light text-dark border">{{ med.category or 'General' }}</span></td>
+                    <td>{{ med.current_stock }} units</td>
+                    <td class="fw-bold text-success">₹{{ "%.2f"|format(med.selling_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

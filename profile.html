@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}My Profile - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-id-card text-primary me-2"></i> My Profile</h2>
+    <p class="text-muted small mb-0">View your current user session details and change your account password.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card card-custom bg-white p-4">
+            <h5 class="fw-bold mb-3">Account Details</h5>
+            <div class="mb-3">
+                <label class="text-muted small">Username</label>
+                <p class="fw-bold fs-5 mb-0">{{ current_user.username }}</p>
+            </div>
+            <div class="mb-3">
+                <label class="text-muted small">Assigned Role</label>
+                <p class="mb-0"><span class="badge bg-primary fs-6">{{ current_user.role or 'User' }}</span></p>
+            </div>
+            <hr>
+            <h5 class="fw-bold mb-3">Update Password</h5>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">New Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter new password" required>
+                </div>
+                <button type="submit" class="btn btn-primary fw-bold w-100">Update Password</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
