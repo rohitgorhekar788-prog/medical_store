@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}User Management - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-users text-primary me-2"></i> User Accounts & Roles</h2>
+        <p class="text-muted small mb-0">Manage system access for Admin, Pharmacists, and Staff.</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class="fa-solid fa-user-plus me-1"></i> Add New User
+    </button>
+</div>
+
+<div class="card card-custom bg-white p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>#{{ user.id }}</td>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>
+                        {% if user.role == 'Admin' %}
+                            <span class="badge bg-primary">Admin</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Staff</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Add User -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Create User Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">User Role</label>
+                    <select name="role" class="form-select">
+                        <option value="Staff">Staff / Cashier</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary w-100">Create User Account</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

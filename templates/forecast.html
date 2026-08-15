@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}AI Demand Forecast - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-chart-line text-primary me-2"></i> AI Demand Forecast</h2>
+    <p class="text-muted small mb-0">Predict future medicine consumption patterns and smart reordering quantities using AI.</p>
+</div>
+
+<div class="card card-custom bg-white p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Medicine</th>
+                    <th>Current Stock</th>
+                    <th>Predicted Monthly Demand</th>
+                    <th>Suggested Reorder Qty</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in forecast_data %}
+                <tr>
+                    <td><strong>{{ item.medicine.name }}</strong></td>
+                    <td>{{ item.medicine.current_stock }} units</td>
+                    <td class="fw-bold text-primary">{{ item.predicted_demand }} units</td>
+                    <td class="fw-bold text-success">{{ item.suggested_reorder }} units</td>
+                    <td>
+                        {% if item.status == 'High Priority' %}
+                            <span class="badge bg-danger">Reorder Required</span>
+                        {% else %}
+                            <span class="badge bg-success">Optimal Stock</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No inventory items available for forecast.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

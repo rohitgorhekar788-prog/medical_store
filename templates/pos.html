@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Point of Sale (POS) - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-cart-shopping text-primary me-2"></i> Point of Sale (POS) Billing</h2>
+        <p class="text-muted small mb-0">Search medicines, build customer cart, process checkout, and generate instant tax invoices.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Available Medicines Search & Selection -->
+    <div class="col-lg-7">
+        <div class="card card-custom bg-white p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-pills text-primary me-2"></i> Select Medicine</h5>
+            
+            <div class="input-group mb-3">
+                <span class="input-group-text bg-light"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" id="searchMed" class="form-control" placeholder="Search by medicine name, generic name or category..." onkeyup="filterMedicines()">
+            </div>
+
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-hover align-middle" id="medTable">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Price</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for med in medicines %}
+                        <tr>
+                            <td>
+                                <strong>{{ med.name }}</strong><br>
+                                <small class="text-muted">{{ med.generic_name or 'N/A' }}</small>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ med.category or 'General' }}</span></td>
+                            <td>
+                                <span class="badge {% if med.current_stock <= (med.min_stock or 0) %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                    {{ med.current_stock }} units
+                                </span>
+                            </td>
+                            <td class="fw-bold text-dark">₹{{ "%.2f"|format(med.selling_price or 0.0) }}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-primary px-3 add-to-cart-btn" 
+                                        data-id="{{ med.id }}"
+                                        data-name="{{ med.name }}"
+                                        data-price="{{ med.selling_price or 0.0 }}"
+                                        data-stock="{{ med.current_stock }}"
+                                        {% if med.current_stock <= 0 %}disabled{% endif %}>
+                                    <i class="fa-solid fa-cart-plus me-1"></i> Add
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No available medicines found in inventory.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Shopping Cart & Checkout -->
+    <div class="col-lg-5">
+        <div class="card card-custom bg-white p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-basket-shopping text-success me-2"></i> Customer Cart</h5>
+                    <button class="btn btn-sm btn-outline-danger" onclick="clearCart()"><i class="fa-solid fa-trash me-1"></i> Clear</button>
+                </div>
+
+                <div class="table-responsive mb-3" style="max-height: 280px; overflow-y: auto;">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th style="width: 110px;">Qty</th>
+                                <th>Subtotal</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartTableBody">
+                            <tr id="emptyCartRow">
+                                <td colspan="4" class="text-center text-muted py-4">Cart is empty. Add medicines from the left panel.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <hr>
+                <div class="d-flex justify-content-between mb-2 fs-5 fw-bold">
+                    <span>Grand Total:</span>
+                    <span class="text-success" id="cartTotal">₹0.00</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Payment Method:</label>
+                    <select id="paymentMode" class="form-select">
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI / QR Code</option>
+                        <option value="Card">Credit / Debit Card</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-success w-100 py-2 fs-5 fw-bold shadow-sm" id="checkoutBtn" onclick="processCheckout()" disabled>
+                    <i class="fa-solid fa-check-circle me-2"></i> Complete Sale & Print Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let cart = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            let id = parseInt(this.getAttribute('data-id'));
+            let name = this.getAttribute('data-name');
+            let price = parseFloat(this.getAttribute('data-price'));
+            let stock = parseInt(this.getAttribute('data-stock'));
+            addToCart(id, name, price, stock);
+        });
+    });
+});
+
+function filterMedicines() {
+    let input = document.getElementById('searchMed').value.toLowerCase();
+    let rows = document.querySelectorAll('#medTable tbody tr');
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
+    });
+}
+
+function addToCart(id, name, price, maxStock) {
+    let existing = cart.find(item => item.id === id);
+    if (existing) {
+        if (existing.qty < maxStock) {
+            existing.qty += 1;
+        } else {
+            alert(`Stock limit reached! Available: ${maxStock}`);
+            return;
+        }
+    } else {
+        if (maxStock <= 0) {
+            alert("Out of stock!");
+            return;
+        }
+        cart.push({ id: id, name: name, price: price, qty: 1, maxStock: maxStock });
+    }
+    renderCart();
+}
+
+function updateQty(id, delta) {
+    let item = cart.find(i => i.id === id);
+    if (item) {
+        let newQty = item.qty + delta;
+        if (newQty > item.maxStock) {
+            alert(`Cannot exceed stock limit of ${item.maxStock}`);
+            return;
+        }
+        if (newQty <= 0) {
+            removeFromCart(id);
+        } else {
+            item.qty = newQty;
+            renderCart();
+        }
+    }
+}
+
+function removeFromCart(id) {
+    cart = cart.filter(item => item.id !== id);
+    renderCart();
+}
+
+function clearCart() {
+    cart = [];
+    renderCart();
+}
+
+function renderCart() {
+    let tbody = document.getElementById('cartTableBody');
+    let totalSpan = document.getElementById('cartTotal');
+    let checkoutBtn = document.getElementById('checkoutBtn');
+
+    if (cart.length === 0) {
+        tbody.innerHTML = `<tr id="emptyCartRow"><td colspan="4" class="text-center text-muted py-4">Cart is empty.</td></tr>`;
+        totalSpan.innerText = '₹0.00';
+        checkoutBtn.disabled = true;
+        return;
+    }
+
+    tbody.innerHTML = '';
+    let grandTotal = 0;
+
+    cart.forEach(item => {
+        let subtotal = item.price * item.qty;
+        grandTotal += subtotal;
+
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${item.name}</strong><br><small class="text-muted">₹${item.price.toFixed(2)}</small></td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="updateQty(${item.id}, -1)">-</button>
+                        <span class="btn btn-light border px-2 disabled fw-bold">${item.qty}</span>
+                        <button class="btn btn-outline-secondary" onclick="updateQty(${item.id}, 1)">+</button>
+                    </div>
+                </td>
+                <td class="fw-bold">₹${subtotal.toFixed(2)}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-link text-danger p-0" onclick="removeFromCart(${item.id})">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    totalSpan.innerText = `₹${grandTotal.toFixed(2)}`;
+    checkoutBtn.disabled = false;
+}
+
+async function processCheckout() {
+    if (cart.length === 0) return;
+
+    let checkoutBtn = document.getElementById('checkoutBtn');
+    let paymentMode = document.getElementById('paymentMode').value;
+    
+    checkoutBtn.disabled = true;
+    checkoutBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Processing...`;
+
+    try {
+        let response = await fetch('/pos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                items: cart.map(i => ({ id: i.id, qty: i.qty })),
+                payment_mode: paymentMode
+            })
+        });
+
+        let result = await response.json();
+
+        if (result.success) {
+            alert('Sale completed successfully!');
+            if (result.sale_id) {
+                window.open(`/download_invoice/${result.sale_id}`, '_blank');
+            }
+            clearCart();
+            setTimeout(() => { window.location.reload(); }, 800);
+        } else {
+            alert(`Checkout Error: ${result.message || 'Payment failed.'}`);
+            checkoutBtn.disabled = false;
+            checkoutBtn.innerHTML = `<i class="fa-solid fa-check-circle me-2"></i> Complete Sale & Print Invoice`;
+        }
+    } catch (error) {
+        console.error("POS Error:", error);
+        alert('Server communication error during checkout.');
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = `<i class="fa-solid fa-check-circle me-2"></i> Complete Sale & Print Invoice`;
+    }
+}
+</script>
+{% endblock %}

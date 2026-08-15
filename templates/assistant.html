@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card border-0 shadow-sm p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
+                <div>
+                    <h4 class="fw-bold mb-1"><i class="bi bi-robot text-info me-2"></i>AI Pharmacy Assistant</h4>
+                    <p class="text-muted small mb-0">Ask questions about stock levels, sales history, or low stock alerts.</p>
+                </div>
+                <span class="badge bg-info bg-opacity-10 text-info border border-info px-3 py-2">
+                    <i class="bi bi-circle-fill text-success fs-6 me-1"></i> AI Online
+                </span>
+            </div>
+
+            <!-- Quick Suggestion Badges -->
+            <div class="mb-3">
+                <small class="text-muted d-block mb-2 fw-semibold">Quick Questions:</small>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="sendQuickPrompt('Which items are low in stock?')">
+                        <i class="bi bi-exclamation-triangle me-1"></i> Low Stock Items
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="sendQuickPrompt('Show me today sales summary')">
+                        <i class="bi bi-graph-up me-1"></i> Today's Sales
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="sendQuickPrompt('Which medicines are expiring soon?')">
+                        <i class="bi bi-calendar-x me-1"></i> Expiring Soon
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat History Window -->
+            <div id="chatWindow" class="bg-light rounded p-3 mb-3 border" style="height: 380px; overflow-y: auto;">
+                <!-- Default AI Welcome Message -->
+                <div class="d-flex align-items-start mb-3">
+                    <div class="bg-info text-white rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-3 shadow-sm border text-dark" style="max-width: 80%;">
+                        Hello! I am your AI Inventory Assistant. How can I help you manage your pharmacy stock and sales today?
+                    </div>
+                </div>
+
+                {% if response %}
+                <!-- Fallback for Form POST method -->
+                <div class="d-flex align-items-start mb-3">
+                    <div class="bg-info text-white rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-3 shadow-sm border text-dark" style="max-width: 80%;">
+                        {{ response }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Input Box -->
+            <form id="aiChatForm" onsubmit="handleChatSubmit(event)">
+                <div class="input-group">
+                    <input type="text" id="userInput" class="form-control form-control-lg" placeholder="Type your query here..." required autocomplete="off">
+                    <button type="submit" id="sendBtn" class="btn btn-info text-white px-4 fw-bold">
+                        <i class="bi bi-send me-1"></i> Ask AI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleChatSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('userInput');
+        const query = input.value.trim();
+        if (!query) return;
+
+        appendMessage('user', query);
+        input.value = '';
+
+        // Show AI Typing Indicator
+        const typingId = appendTypingIndicator();
+
+        fetch("{{ url_for('assistant') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: query, prompt: query })
+        })
+        .then(res => res.json())
+        .then(data => {
+            removeTypingIndicator(typingId);
+            const answer = data.reply || data.response || "I could not fetch a response right now. Please try again.";
+            appendMessage('ai', answer);
+        })
+        .catch(err => {
+            removeTypingIndicator(typingId);
+            appendMessage('ai', "Sorry, I encountered a server error. Please check your backend route.");
+        });
+    }
+
+    function sendQuickPrompt(promptText) {
+        document.getElementById('userInput').value = promptText;
+        document.getElementById('aiChatForm').dispatchEvent(new Event('submit'));
+    }
+
+    function appendMessage(sender, text) {
+        const chatWindow = document.getElementById('chatWindow');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = sender === 'user' ? 'd-flex justify-content-end mb-3' : 'd-flex align-items-start mb-3';
+
+        if (sender === 'user') {
+            msgDiv.innerHTML = `
+                <div class="bg-info text-white p-3 rounded-3 shadow-sm" style="max-width: 80%;">
+                    ${text}
+                </div>
+            `;
+        } else {
+            msgDiv.innerHTML = `
+                <div class="bg-info text-white rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div class="bg-white p-3 rounded-3 shadow-sm border text-dark" style="max-width: 80%;">
+                    ${text}
+                </div>
+            `;
+        }
+
+        chatWindow.appendChild(msgDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function appendTypingIndicator() {
+        const chatWindow = document.getElementById('chatWindow');
+        const id = 'typing_' + Date.now();
+        const typingDiv = document.createElement('div');
+        typingDiv.id = id;
+        typingDiv.className = 'd-flex align-items-start mb-3';
+        typingDiv.innerHTML = `
+            <div class="bg-info text-white rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div class="bg-white p-3 rounded-3 shadow-sm border text-muted fst-italic">
+                <span class="spinner-grow spinner-grow-sm me-1" role="status"></span> AI is thinking...
+            </div>
+        `;
+        chatWindow.appendChild(typingDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        return id;
+    }
+
+    function removeTypingIndicator(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }
+</script>
+{% endblock %}
