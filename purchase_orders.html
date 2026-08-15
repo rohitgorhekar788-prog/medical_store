@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Purchase Orders - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Purchase Orders</h2>
+        <p class="text-muted small mb-0">Track stock replenishment orders issued to distributors.</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPOModal">
+        <i class="fa-solid fa-file-invoice-dollar me-1"></i> New Purchase Order
+    </button>
+</div>
+
+<div class="card card-custom bg-white p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Order ID</th>
+                    <th>Supplier</th>
+                    <th>Order Date</th>
+                    <th>Est. Total Cost</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><strong>#PO-{{ "%04d"|format(order.id) }}</strong></td>
+                    <td>{{ order.supplier.name }}</td>
+                    <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="fw-bold">₹{{ "%.2f"|format(order.total_cost) }}</td>
+                    <td>
+                        {% if order.status == 'Pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif order.status == 'Received' %}
+                            <span class="badge bg-success">Received</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ order.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No purchase orders found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Add PO -->
+<div class="modal fade" id="addPOModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Create Purchase Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Supplier</label>
+                    <select name="supplier_id" class="form-select" required>
+                        {% for s in suppliers %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Estimated Order Value (₹)</label>
+                    <input type="number" step="0.01" name="total_cost" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary w-100">Create Order</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

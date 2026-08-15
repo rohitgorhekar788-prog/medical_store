@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PharmaAI System{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #sidebar {
+            min-width: 260px;
+            max-width: 260px;
+            min-height: 100vh;
+            background: #1e293b;
+            color: #fff;
+            transition: all 0.3s;
+        }
+
+        #sidebar .logo-details {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+
+        #sidebar .list-group-item {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            border: none;
+            padding: 12px 20px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        #sidebar .list-group-item:hover, 
+        #sidebar .list-group-item.active {
+            color: #ffffff;
+            background-color: #334155 !important;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        .top-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 30px;
+        }
+
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .badge-custom {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+<div class="d-flex">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="logo-details">
+            <i class="fa-solid fa-hospital-user text-primary fs-3 me-2"></i>
+            <span class="fs-5 fw-bold text-white">PharmaAI</span>
+        </div>
+
+        <div class="list-group list-group-flush py-2">
+            <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-gauge me-2"></i> Dashboard
+            </a>
+            <a href="{{ url_for('scanner') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-camera me-2"></i> AI Medicine Scanner
+            </a>
+            <a href="{{ url_for('products') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-pills me-2"></i> Products / Medicines
+            </a>
+            <a href="{{ url_for('inventory') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-boxes-stacked me-2"></i> Stock / Inventory
+            </a>
+            <a href="{{ url_for('pos') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-cart-shopping me-2"></i> POS Billing
+            </a>
+            <a href="{{ url_for('sales_history') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-clock-rotate-left me-2"></i> Sales History
+            </a>
+            <a href="{{ url_for('suppliers') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-truck-field me-2"></i> Suppliers
+            </a>
+            <a href="{{ url_for('purchase_orders') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-file-invoice-dollar me-2"></i> Purchase Orders
+            </a>
+            <a href="{{ url_for('alerts') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-bell me-2"></i> System Alerts
+            </a>
+            <a href="{{ url_for('forecast') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-chart-line me-2"></i> AI Demand Forecast
+            </a>
+            <a href="{{ url_for('sales_profit') }}" class="list-group-item list-group-item-action bg-transparent"><i class="fa-solid fa-chart-line me-2"></i> Sales & Profit</a>
+            <a href="{{ url_for('assistant') }}" class="list-group-item list-group-item-action bg-transparent"><i class="fa-solid fa-robot me-2"></i> AI Assistant</a>
+            <a href="{{ url_for('analytics') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-chart-pie me-2"></i> AI Analytics
+            </a>
+            <a href="{{ url_for('expenses') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-receipt me-2"></i> Store Expenses
+            </a>
+            <a href="{{ url_for('cash_drawer') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-cash-register me-2"></i> Cash Drawer
+            </a>
+            <a href="{{ url_for('users_page') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-users me-2"></i> User Management
+            </a>
+            <a href="{{ url_for('profile') }}" class="list-group-item list-group-item-action bg-transparent">
+                <i class="fa-solid fa-id-card me-2"></i> My Profile
+            </a>
+            <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-transparent text-danger fw-semibold mt-3">
+                <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper d-flex flex-column">
+        <!-- Top Navbar -->
+        <header class="top-navbar d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-secondary">Smart AI Pharmacy Management System</span>
+            <div class="d-flex align-items-center gap-3">
+                {% if current_user.is_authenticated %}
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-6 py-2 px-3">
+                    <i class="fa-solid fa-user-circle me-1"></i> {{ current_user.username }} ({{ current_user.role or 'Staff' }})
+                </span>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Main Content Body -->
+        <main class="p-4 flex-grow-1">
+            <!-- Flash Notification Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show card-custom mb-4" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Highlight Active Menu Item Dynamic Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll("#sidebar .list-group-item");
+
+        navLinks.forEach(link => {
+            if (link.getAttribute("href") === currentPath) {
+                link.classList.add("active");
+            }
+        });
+    });
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

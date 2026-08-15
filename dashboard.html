@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- 1. HEADER & METRICS SUMMARY -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Pharmacy Analytics Dashboard</h2>
+            <p class="text-muted mb-0">Real-time inventory metrics, stock database search, and AI insights.</p>
+        </div>
+        <div>
+            <span class="badge bg-primary fs-6 px-3 py-2 rounded-3">
+                <i class="bi bi-person-circle me-1"></i> {{ session.get('user', 'admin') }} Session
+            </span>
+        </div>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 bg-white rounded-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small">Total Medicines Found</span>
+                        <h3 class="fw-bold mb-0 text-dark">{{ total_count or total_medicines or 0 }}</h3>
+                        <small class="text-muted">Live Stock Database</small>
+                    </div>
+                    <div class="bg-primary-subtle text-primary p-3 rounded-circle fs-3">
+                        <i class="bi bi-capsule"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 bg-white rounded-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small">Today's Sales Revenue</span>
+                        <h3 class="fw-bold mb-0 text-dark">₹{{ "%.2f"|format(todays_sales or 0) }}</h3>
+                        <small class="text-success"><i class="bi bi-graph-up me-1"></i>Live Counter</small>
+                    </div>
+                    <div class="bg-info-subtle text-info p-3 rounded-circle fs-3">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 bg-white rounded-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small">Total Inventory Value</span>
+                        <h3 class="fw-bold mb-0 text-dark">₹{{ "%.2f"|format(total_inventory_value or 0) }}</h3>
+                        <small class="text-primary">At Selling Price</small>
+                    </div>
+                    <div class="bg-success-subtle text-success p-3 rounded-circle fs-3">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 bg-white rounded-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small">Alerts & Low Stock</span>
+                        <h3 class="fw-bold mb-0 text-warning">{{ total_alerts or 0 }}</h3>
+                        <small class="text-muted">Attention Needed</small>
+                    </div>
+                    <div class="bg-warning-subtle text-warning p-3 rounded-circle fs-3">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. SEARCH BAR -->
+    <div class="card border-0 shadow-sm bg-white p-3 mb-4 rounded-4">
+        <form method="GET" action="{{ url_for('dashboard') }}" class="row g-2 align-items-center">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="bi bi-search text-primary fs-5"></i></span>
+                    <input type="text" name="search" class="form-control form-control-lg border-0 bg-light" 
+                           placeholder="Search by medicine name, composition, or salt..." 
+                           value="{{ search_query or '' }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-lg w-100 rounded-3 fw-bold">
+                    Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 3. MEDICINE INVENTORY TABLE -->
+    <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light border-bottom">
+                        <tr>
+                            <th class="ps-4">#ID</th>
+                            <th>Medicine Name</th>
+                            <th>Price (₹)</th>
+                            <th>Manufacturer</th>
+                            <th>Pack Size</th>
+                            <th>Stock Status</th>
+                            <th>Composition</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if medicines %}
+                            {% for med in medicines %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-secondary">#{{ med.id or loop.index }}</td>
+                                <td class="fw-bold text-dark">{{ med.name or 'Unknown' }}</td>
+                                <td class="text-success fw-bold">
+                                    {% if med.price %}
+                                        ₹{{ med.price }}
+                                    {% else %}
+                                        <span class="text-muted small">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td><small class="fw-semibold text-secondary">{{ med.manufacturer or 'Generic' }}</small></td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ med.pack_size or 'Standard' }}</span>
+                                </td>
+                                <td>
+                                    {% if med.current_stock is defined and med.current_stock == 0 %}
+                                        <span class="badge bg-danger px-2 py-1 rounded-pill">Out of Stock</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold">
+                                            <i class="bi bi-check-circle-fill me-1"></i> In Stock
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted d-inline-block text-truncate" style="max-width: 200px;">
+                                        {{ med.composition or med.salt_composition or 'N/A' }}
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary rounded-circle" 
+                                            onclick="viewDetails('{{ med.id or loop.index }}')" 
+                                            title="View Details">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-capsule fs-1 text-danger d-block mb-2"></i>
+                                    <h5>No medicines found matching your query</h5>
+                                    <p class="small mb-0">Try searching with a different medicine name or salt composition.</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. PAGINATION -->
+    {% if total_pages and total_pages > 1 %}
+    {% set current_page = page or 1 %}
+    <nav class="mb-4">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('dashboard', page=(current_page - 1 if current_page > 1 else 1), search=search_query or '') }}">Previous</a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">Page {{ current_page }} of {{ total_pages }}</span>
+            </li>
+            <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('dashboard', page=(current_page + 1 if current_page < total_pages else total_pages), search=search_query or '') }}">Next</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- 5. PHARMA AI ASSISTANT SECTION -->
+    <div class="card border-0 shadow-sm bg-white rounded-4 p-4 mb-4">
+        <div class="d-flex align-items-center mb-3">
+            <div class="fs-2 text-primary me-3"><i class="bi bi-robot"></i></div>
+            <div>
+                <h5 class="fw-bold mb-0">PharmaAI Assistant</h5>
+                <small class="text-muted">Ask questions regarding low stock items, sales performance, or inventory counts.</small>
+            </div>
+        </div>
+        
+        <div class="p-3 bg-light rounded-3 mb-3 border" style="min-height: 100px;">
+            <span class="badge bg-primary mb-2">AI Copilot</span>
+            <p class="mb-0 text-secondary">Hello! I am your AI inventory assistant. Ask me questions like: <em>"What items are low in stock?"</em> or <em>"Show today's total sales."</em></p>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="aiInput" class="form-control form-control-lg border-light bg-light" placeholder="Ask AI Assistant...">
+            <button class="btn btn-primary px-4 fw-bold" type="button" onclick="askAI()">
+                <i class="bi bi-send-fill me-1"></i> Send
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- MEDICINE DETAILS MODAL -->
+<div class="modal fade" id="medicineModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white rounded-top-4">
+                <h5 class="modal-title fw-bold" id="modalMedName">Medicine Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <span class="text-muted small">Manufacturer:</span>
+                    <p class="fw-bold text-dark mb-0" id="modalManufacturer">-</p>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <span class="text-muted small">Price:</span>
+                        <p class="fw-bold text-success mb-0" id="modalPrice">-</p>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-muted small">Pack Size:</span>
+                        <p class="fw-bold text-dark mb-0" id="modalPackSize">-</p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted small">Composition / Salt:</span>
+                    <p class="fw-normal text-secondary bg-light p-2 rounded border mb-0" id="modalComposition">-</p>
+                </div>
+                <div>
+                    <span class="text-muted small">Stock Status:</span>
+                    <p class="mb-0"><span class="badge bg-success-subtle text-success border px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> In Stock & Ready for Billing</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewDetails(medId) {
+        if (!medId) return;
+        fetch('/api/medicine/' + medId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                document.getElementById('modalMedName').innerText = data.name || 'Medicine Details';
+                document.getElementById('modalManufacturer').innerText = data.manufacturer || 'N/A';
+                document.getElementById('modalPrice').innerText = data.price ? ('₹' + data.price) : 'N/A';
+                document.getElementById('modalPackSize').innerText = data.pack_size || 'N/A';
+                document.getElementById('modalComposition').innerText = data.composition || data.salt_composition || 'N/A';
+
+                var medModal = new bootstrap.Modal(document.getElementById('medicineModal'));
+                medModal.show();
+            })
+            .catch(err => console.error('Fetch Error:', err));
+    }
+
+    async function askAI() {
+        const input = document.getElementById('aiInput');
+        const query = input.value.trim();
+        if (!query) return;
+        const btn = document.querySelector('[onclick="askAI()"]');
+        if (btn) btn.disabled = true;
+        try {
+            const res = await fetch("{{ url_for('assistant') }}", {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:query,prompt:query})});
+            const data = await res.json();
+            const box = input.closest('.card').querySelector('.p-3.bg-light');
+            if (box) box.innerHTML = '<span class="badge bg-primary mb-2">AI Copilot</span><p class="mb-0 text-secondary" style="white-space:pre-line"></p>';
+            if (box) box.querySelector('p').textContent = data.reply || 'No response received.';
+        } catch(e) { alert('AI server error. Please open the AI Assistant page.'); }
+        finally { if (btn) btn.disabled = false; }
+    }
+</script>
+{% endblock %}

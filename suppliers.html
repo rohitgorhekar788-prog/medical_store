@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Suppliers Management - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Suppliers & Vendors</h2>
+        <p class="text-muted small mb-0">Manage medicine distributors, contact details, and supplier records.</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+        <i class="fa-solid fa-truck-field me-1"></i> Add New Supplier
+    </button>
+</div>
+
+<div class="card card-custom bg-white p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Supplier / Distributor Name</th>
+                    <th>Contact Person</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in suppliers %}
+                <tr>
+                    <td>#{{ s.id }}</td>
+                    <td><strong>{{ s.name }}</strong></td>
+                    <td>{{ s.contact_person or 'N/A' }}</td>
+                    <td><i class="fa-solid fa-phone me-1 text-muted"></i>{{ s.phone or 'N/A' }}</td>
+                    <td>{{ s.email or 'N/A' }}</td>
+                    <td><small class="text-muted">{{ s.address or 'N/A' }}</small></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No suppliers registered yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Add Supplier -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Add Supplier / Distributor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Company / Supplier Name</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contact Person</label>
+                    <input type="text" name="contact_person" class="form-control">
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Phone</label>
+                        <input type="text" name="phone" class="form-control">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <textarea name="address" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary w-100">Save Supplier</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

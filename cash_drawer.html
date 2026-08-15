@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Cash Drawer - PharmaAI System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1">Daily Cash Drawer Reconciliation</h2>
+    <p class="text-muted small mb-0">Record daily opening cash, track cash sales, and verify closing balances.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card card-custom bg-white p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-cash-register text-success me-2"></i> Today's Summary</h5>
+            
+            <div class="p-3 bg-light rounded mb-3">
+                <small class="text-muted d-block">System Calculated Cash Sales Today:</small>
+                <span class="fs-3 fw-bold text-success">₹{{ "%.2f"|format(today_cash_sales) }}</span>
+            </div>
+
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Opening Cash Balance (₹)</label>
+                    <input type="number" step="0.01" name="opening_cash" class="form-control" value="{{ record.opening_cash if record else 0.0 }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Closing Cash Counter Count (₹)</label>
+                    <input type="number" step="0.01" name="closing_cash" class="form-control" value="{{ record.closing_cash if record else 0.0 }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Notes / Discrepancy Remarks</label>
+                    <textarea name="notes" class="form-control" rows="2">{{ record.notes if record else '' }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Save Today's Cash Record</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
