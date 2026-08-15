@@ -206,6 +206,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+
 # =========================================================
 # DATABASE INITIALIZATION
 # =========================================================
@@ -289,9 +290,76 @@ def login():
             flash('Successfully logged in!', 'success')
             return redirect(url_for('dashboard'))
 
-        flash('Invalid username or password. Default Admin: admin / admin123', 'danger')
+        flash('Invalid username or password.', 'danger')
 
     return render_template('login.html')
+
+
+# =========================================================
+# USER REGISTRATION
+# =========================================================
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        username = (request.form.get('username') or '').strip()
+        email = (request.form.get('email') or '').strip()
+        password = request.form.get('password') or ''
+        confirm_password = request.form.get('confirm_password') or ''
+
+        # Validation
+        if not username or not email or not password:
+            flash('Please fill all required fields.', 'danger')
+            return redirect(url_for('register'))
+
+        if len(username) < 3:
+            flash('Username must be at least 3 characters.', 'danger')
+            return redirect(url_for('register'))
+
+        if len(password) < 6:
+            flash('Password must be at least 6 characters.', 'danger')
+            return redirect(url_for('register'))
+
+        if password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return redirect(url_for('register'))
+
+        # Check username
+        existing_username = User.query.filter_by(username=username).first()
+        if existing_username:
+            flash('Username already exists. Please choose another.', 'danger')
+            return redirect(url_for('register'))
+
+        # Check email if email is already used
+        existing_email = User.query.filter_by(email=email).first()
+        if existing_email:
+            flash('Email is already registered.', 'danger')
+            return redirect(url_for('register'))
+
+        try:
+            new_user = User(
+                username=username,
+                email=email,
+                role='Staff'
+            )
+
+            new_user.set_password(password)
+
+            db.session.add(new_user)
+            db.session.commit()
+
+            flash('Registration successful! Please login.', 'success')
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Registration failed: {str(e)}', 'danger')
+            return redirect(url_for('register'))
+
+    return render_template('register.html')
 
 
 @app.route('/logout')

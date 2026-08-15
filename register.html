@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account | PharmaAI</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(13,110,253,.18), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(25,135,84,.15), transparent 35%),
+                #f4f7fb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 15px;
+        }
+
+        .register-wrapper {
+            width: 100%;
+            max-width: 1050px;
+            min-height: 650px;
+            background: rgba(255,255,255,.96);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 70px rgba(0,0,0,.12);
+            display: flex;
+        }
+
+        /* LEFT SIDE */
+
+        .register-info {
+            width: 45%;
+            padding: 55px 45px;
+            background: linear-gradient(145deg, #0d6efd, #084298);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-info::before {
+            content: "";
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.08);
+            top: -120px;
+            right: -100px;
+        }
+
+        .register-info::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.06);
+            bottom: -100px;
+            left: -80px;
+        }
+
+        .brand {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: white;
+            color: #0d6efd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+        }
+
+        .info-content {
+            position: relative;
+            z-index: 2;
+            margin-top: 90px;
+        }
+
+        .info-content h1 {
+            font-size: 40px;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+
+        .info-content p {
+            font-size: 16px;
+            line-height: 1.7;
+            opacity: .9;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 25px;
+            font-size: 15px;
+        }
+
+        .feature i {
+            width: 35px;
+            height: 35px;
+            background: rgba(255,255,255,.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* RIGHT SIDE */
+
+        .register-form {
+            width: 55%;
+            padding: 55px 65px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-title {
+            font-size: 30px;
+            font-weight: 800;
+            color: #172033;
+            margin-bottom: 7px;
+        }
+
+        .form-subtitle {
+            color: #718096;
+            margin-bottom: 28px;
+        }
+
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .input-group-custom i.input-icon {
+            position: absolute;
+            left: 17px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #718096;
+            z-index: 3;
+        }
+
+        .input-group-custom input {
+            width: 100%;
+            height: 55px;
+            border: 1px solid #dce2ea;
+            border-radius: 14px;
+            padding: 0 48px;
+            font-size: 15px;
+            outline: none;
+            transition: .25s;
+            background: #f9fafc;
+        }
+
+        .input-group-custom input:focus {
+            border-color: #0d6efd;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(13,110,253,.08);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #718096;
+            cursor: pointer;
+            z-index: 4;
+        }
+
+        .register-btn {
+            width: 100%;
+            height: 55px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #0d6efd, #084298);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 5px;
+            transition: .25s;
+            box-shadow: 0 10px 25px rgba(13,110,253,.25);
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(13,110,253,.32);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 24px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #0d6efd;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .password-hint {
+            font-size: 12px;
+            color: #8a94a6;
+            margin-top: -10px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 850px) {
+            .register-wrapper {
+                flex-direction: column;
+            }
+
+            .register-info,
+            .register-form {
+                width: 100%;
+            }
+
+            .register-info {
+                padding: 35px;
+            }
+
+            .info-content {
+                margin-top: 35px;
+            }
+
+            .info-content h1 {
+                font-size: 30px;
+            }
+
+            .register-form {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 10px;
+            }
+
+            .register-wrapper {
+                border-radius: 20px;
+            }
+
+            .register-info {
+                display: none;
+            }
+
+            .register-form {
+                width: 100%;
+                padding: 35px 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="register-wrapper">
+
+    <!-- LEFT INFORMATION PANEL -->
+    <div class="register-info">
+
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="bi bi-capsule-pill"></i>
+            </div>
+            <span>PharmaAI</span>
+        </div>
+
+        <div class="info-content">
+
+            <h1>
+                Manage Your<br>
+                Pharmacy Smarter.
+            </h1>
+
+            <p>
+                Create your staff account and access the
+                modern PharmaAI Medical Store management
+                system.
+            </p>
+
+            <div class="feature">
+                <i class="bi bi-box-seam"></i>
+                <span>Smart Inventory Management</span>
+            </div>
+
+            <div class="feature">
+                <i class="bi bi-bar-chart-line"></i>
+                <span>Sales & Profit Analytics</span>
+            </div>
+
+            <div class="feature">
+                <i class="bi bi-shield-check"></i>
+                <span>Secure User Authentication</span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- REGISTER FORM -->
+    <div class="register-form">
+
+        <div class="form-title">
+            Create Account
+        </div>
+
+        <div class="form-subtitle">
+            Register a new staff account to continue.
+        </div>
+
+
+        <!-- FLASH MESSAGES -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert">
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+
+        <form method="POST" action="{{ url_for('register') }}">
+
+            <!-- USERNAME -->
+            <div class="input-group-custom">
+
+                <i class="bi bi-person input-icon"></i>
+
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    required
+                    minlength="3"
+                    autocomplete="username"
+                >
+
+            </div>
+
+
+            <!-- EMAIL -->
+            <div class="input-group-custom">
+
+                <i class="bi bi-envelope input-icon"></i>
+
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Email Address"
+                    required
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+            <!-- PASSWORD -->
+            <div class="input-group-custom">
+
+                <i class="bi bi-lock input-icon"></i>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Password"
+                    required
+                    minlength="6"
+                    autocomplete="new-password"
+                >
+
+                <button
+                    type="button"
+                    class="password-toggle"
+                    onclick="togglePassword('password', 'eye1')"
+                >
+                    <i id="eye1" class="bi bi-eye"></i>
+                </button>
+
+            </div>
+
+            <div class="password-hint">
+                Password must contain at least 6 characters.
+            </div>
+
+
+            <!-- CONFIRM PASSWORD -->
+            <div class="input-group-custom">
+
+                <i class="bi bi-shield-lock input-icon"></i>
+
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    placeholder="Confirm Password"
+                    required
+                    minlength="6"
+                    autocomplete="new-password"
+                >
+
+                <button
+                    type="button"
+                    class="password-toggle"
+                    onclick="togglePassword('confirm_password', 'eye2')"
+                >
+                    <i id="eye2" class="bi bi-eye"></i>
+                </button>
+
+            </div>
+
+
+            <!-- BUTTON -->
+            <button type="submit" class="register-btn">
+
+                <i class="bi bi-person-plus me-2"></i>
+
+                Create Account
+
+            </button>
+
+        </form>
+
+
+        <div class="login-link">
+
+            Already have an account?
+
+            <a href="{{ url_for('login') }}">
+                Sign in
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function togglePassword(inputId, iconId) {
+
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+
+    if (input.type === "password") {
+
+        input.type = "text";
+
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+
+    } else {
+
+        input.type = "password";
+
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+
+    }
+
+}
+
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
